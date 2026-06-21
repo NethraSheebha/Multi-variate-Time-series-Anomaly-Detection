@@ -2,4 +2,4 @@
     no_scm = True
     remote = multi-variate-time-series-anomaly-detection
 ['remote "multi-variate-time-series-anomaly-detection"']
-    url = https://drive.google.com/drive/folders/129z450h0zJpud1voNi8O6tWW7dQPpo-3
+    url = gdrive://129z450h0zJpud1voNi8O6tWW7dQPpo-3
