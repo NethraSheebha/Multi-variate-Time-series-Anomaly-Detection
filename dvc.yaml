@@ -1,0 +1,36 @@
+stages:
+  split_data:
+    cmd: python src/split_data.py machine-1-1
+    deps:
+      - src/split_data.py
+      - data/raw/machine-1-1.txt
+      - data/raw/machine-1-1_test.txt
+      - data/raw/machine-1-1_labels.txt
+    outs:
+      - data/processed/train.csv
+      - data/processed/validation.csv
+      - data/processed/demo_stream.csv
+      - data/processed/demo_labels.csv
+
+  train_omnianomaly:
+    cmd: python src/train_pipeline.py machine-1-1
+    deps:
+      - src/train_pipeline.py
+      - data/processed/train.csv
+      - data/processed/validation.csv
+    outs:
+      - models/scaler.pkl
+      - models/threshold.npy
+      - models/vae_encoder.keras
+      - models/vae_decoder.keras
+
+  evaluate_omnianomaly:
+    cmd: python src/evaluate.py machine-1-1
+    deps:
+      - src/evaluate.py
+      - data/processed/demo_stream.csv
+      - data/processed/demo_labels.csv
+      - models/scaler.pkl
+      - models/threshold.npy
+      - models/vae_encoder.keras
+      - models/vae_decoder.keras

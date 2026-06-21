@@ -1,0 +1,133 @@
+schema: '2.0'
+stages:
+  split_data:
+    cmd: python src/split_data.py machine-1-1
+    deps:
+    - path: data/raw/machine-1-1.txt
+      hash: md5
+      md5: aa0c83b521a709279225c9425d77aca5
+      size: 9739818
+    - path: data/raw/machine-1-1_labels.txt
+      hash: md5
+      md5: d67776f7bcaab750b7a11b8eae1fabbb
+      size: 56958
+    - path: data/raw/machine-1-1_test.txt
+      hash: md5
+      md5: 4f24368801764c42f25dc96f7e0dbc3b
+      size: 9739818
+    - path: src/split_data.py
+      hash: md5
+      md5: 6ed78f428b09553bfa7eafa233e88efd
+      size: 1198
+    outs:
+    - path: data/processed/demo_labels.csv
+      hash: md5
+      md5: 1d5dfbae77a1113fcf779ccbfe408bc2
+      size: 740454
+    - path: data/processed/demo_stream.csv
+      hash: md5
+      md5: 619ae6b74b38f59570565de64ead0499
+      size: 27083529
+    - path: data/processed/train.csv
+      hash: md5
+      md5: e8f3555cf8b67982708556e1925c7d1a
+      size: 18958185
+    - path: data/processed/validation.csv
+      hash: md5
+      md5: 3b1c7a15ea3860c6fa59f436a1f804f8
+      size: 8125344
+  train_vae:
+    cmd: python src/train_pipeline.py
+    deps:
+    - path: data/processed/train.csv
+      hash: md5
+      md5: 5297da04ae643df5b39d224d197fd94f
+      size: 18938250
+    - path: data/processed/validation.csv
+      hash: md5
+      md5: fd4206dace602bf03e2e473bfd048d31
+      size: 8116800
+    - path: src/train_pipeline.py
+      hash: md5
+      md5: 96de1a90efafe1d8b6b0bc34cba8710e
+      size: 12812
+    outs:
+    - path: models/scaler.pkl
+      hash: md5
+      md5: b03cb92aefa649a5379a85320883fbcc
+      size: 2183
+    - path: models/threshold.npy
+      hash: md5
+      md5: 9e6b905bb5edbe192725760b9b3c654f
+      size: 136
+    - path: models/vae_decoder.keras
+      hash: md5
+      md5: b72aa09be6cb0ef4aec5cc0d97681085
+      size: 254510
+    - path: models/vae_encoder.keras
+      hash: md5
+      md5: 1f6b685deeb57e69d064f4287635ec7a
+      size: 263467
+  train_omnianomaly:
+    cmd: python src/train_pipeline.py machine-1-1
+    deps:
+    - path: data/processed/train.csv
+      hash: md5
+      md5: e8f3555cf8b67982708556e1925c7d1a
+      size: 18958185
+    - path: data/processed/validation.csv
+      hash: md5
+      md5: 3b1c7a15ea3860c6fa59f436a1f804f8
+      size: 8125344
+    - path: src/train_pipeline.py
+      hash: md5
+      md5: dadfb6f34f3137dfcbab422e25961d9d
+      size: 5809
+    outs:
+    - path: models/scaler.pkl
+      hash: md5
+      md5: 574440d5e6c8286e2d73bdadb059ba04
+      size: 2183
+    - path: models/threshold.npy
+      hash: md5
+      md5: b78b1ebe209361ec49140df69b58a260
+      size: 136
+    - path: models/vae_decoder.keras
+      hash: md5
+      md5: a0edbf836ac8894b43db011f6ef63d8c
+      size: 350133
+    - path: models/vae_encoder.keras
+      hash: md5
+      md5: 813ccf16077fa8f3f13e9f2bf8f49351
+      size: 335867
+  evaluate_omnianomaly:
+    cmd: python src/evaluate.py machine-1-1
+    deps:
+    - path: data/processed/demo_labels.csv
+      hash: md5
+      md5: 1d5dfbae77a1113fcf779ccbfe408bc2
+      size: 740454
+    - path: data/processed/demo_stream.csv
+      hash: md5
+      md5: 619ae6b74b38f59570565de64ead0499
+      size: 27083529
+    - path: models/scaler.pkl
+      hash: md5
+      md5: 574440d5e6c8286e2d73bdadb059ba04
+      size: 2183
+    - path: models/threshold.npy
+      hash: md5
+      md5: b78b1ebe209361ec49140df69b58a260
+      size: 136
+    - path: models/vae_decoder.keras
+      hash: md5
+      md5: a0edbf836ac8894b43db011f6ef63d8c
+      size: 350133
+    - path: models/vae_encoder.keras
+      hash: md5
+      md5: 813ccf16077fa8f3f13e9f2bf8f49351
+      size: 335867
+    - path: src/evaluate.py
+      hash: md5
+      md5: 6bb7ade103af991fca2c9e65b22b903f
+      size: 4079

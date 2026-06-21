@@ -1,0 +1,8 @@
+# Ignore the local DVC cache entirely
+.dvc/cache/
+.dvc/tmp/
+
+# Ignore your actual large dataset files (leave the .dvc files alone!)
+data/raw/machine-1-1.txt
+data/raw/machine-1-1_labels.txt
+data/raw/machine-1-1_test.txt
