@@ -4,6 +4,12 @@ import numpy as np
 import tensorflow as tf
 from keras import layers, models, losses
 from sklearn.preprocessing import MinMaxScaler
+import mlflow
+import mlflow.keras
+from mlflow.models.signature import infer_signature
+
+mlflow.set_tracking_uri("sqlite:///mlflow.db")
+mlflow.set_experiment("OmniAnomaly_3D_Sequence_Anomaly_Detection")
 
 tf.random.set_seed(42)
 np.random.seed(42)
@@ -105,20 +111,70 @@ if __name__ == "__main__":
     _, timesteps, features = X_train.shape # Extract dimensions (30, 38)
     print(f"📊 OmniAnomaly Data Input Matrix Configuration: {X_train.shape}")
     
-    vae = OmniAnomalyVAE(timesteps=timesteps, features=features, latent_dim=16)
-    vae.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3))
-    
-    print("🚀 Training Recurrent Stochastic OmniAnomaly Network...")
-    vae.fit(X_train, epochs=15, batch_size=128, verbose=1)
-    
-    print("📐 Calibrating baseline validation metrics...")
-    reconstructions = vae.predict(X_val)
-    val_errors = np.mean(np.square(X_val - reconstructions), axis=(1, 2)) # Evaluate variance across sequences
-    
-    threshold = np.percentile(val_errors, 99.5)
-    print(f"\n🎯 OmniAnomaly Engineered Alert Threshold: {threshold:.6f}")
-    
-    np.save("models/threshold.npy", threshold)
-    vae.encoder.save("models/vae_encoder.keras")
-    vae.decoder.save("models/vae_decoder.keras")
-    print("🎉 OmniAnomaly engine artifacts written successfully to models/ folder.")
+    # 🎯 START MLFLOW AUTO-LOGGING RUN
+    with mlflow.start_run(run_name="OmniAnomaly_GRU_Training") as run:
+        
+        # Log Hyperparameters to MLflow tracking panel
+        mlflow.log_param("window_size", 30)
+        mlflow.log_param("latent_dim", 16)
+        mlflow.log_param("learning_rate", 1e-3)
+        mlflow.log_param("batch_size", 128)
+        mlflow.log_param("epochs", 15)
+
+        vae = OmniAnomalyVAE(timesteps=timesteps, features=features, latent_dim=16)
+        vae.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3))
+        
+        # Train the model while MLflow tracks internal Keras history loops
+        print("🚀 Training OmniAnomaly Model with MLflow Tracking...")
+        history = vae.fit(X_train, epochs=15, batch_size=128, verbose=1)
+        
+        # Log final metric checkpoints
+        mlflow.log_metric("final_total_loss", float(history.history['loss'][-1]))
+        mlflow.log_metric("final_recon_loss", float(history.history['recon_loss'][-1]))
+        mlflow.log_metric("final_kl_loss", float(history.history['kl_loss'][-1]))
+        
+        # Calculate validation threshold settings
+        reconstructions = vae.predict(X_val)
+        val_errors = np.mean(np.square(X_val - reconstructions), axis=(1, 2))
+        threshold = np.percentile(val_errors, 99.5)
+        print(f"\n🎯 Engineered Threshold: {threshold:.6f}")
+        
+        mlflow.log_metric("calibrated_threshold", float(threshold))
+        np.save("models/threshold.npy", threshold)
+
+        sample_in = X_train[:5]
+        
+        # Encoder Signature (Input: 3D Sequence -> Output: [z_mean, z_log_var, z])
+        encoder_out = vae.encoder.predict(sample_in)
+        encoder_signature = infer_signature(sample_in, encoder_out)
+        
+        # Decoder Signature (Input: 2D Latent Vector -> Output: 3D Reconstruction)
+        decoder_in = encoder_out[2]  # Takes the sampled z vector
+        decoder_out = vae.decoder.predict(decoder_in)
+        decoder_signature = infer_signature(decoder_in, decoder_out)
+
+        # -------------------------------------------------------------
+        # 🎯 REGISTER MODELS WITH SIGNATURES
+        # -------------------------------------------------------------
+        print("💾 Registering model components into MLflow Artifact Server...")
+        
+        mlflow.keras.log_model(
+            vae.encoder, 
+            name="omnianomaly_encoder",
+            signature=encoder_signature,
+            registered_model_name="OmniAnomaly_Encoder",
+        )
+        mlflow.keras.log_model(
+            vae.decoder, 
+            name="omnianomaly_decoder",
+            signature=decoder_signature,
+            registered_model_name="OmniAnomaly_Decoder",
+        )
+        
+        vae.encoder.save("models/vae_encoder.keras")
+        vae.decoder.save("models/vae_decoder.keras")
+        # Log static scaler parameter configuration assets
+        mlflow.log_artifact("models/scaler.pkl", artifact_path="preprocessing")
+        mlflow.log_artifact("models/threshold.npy", artifact_path="alerting_parameters")
+        
+        print("🎉 Run logged completely. Weight binaries version-locked in MLflow UI.")
