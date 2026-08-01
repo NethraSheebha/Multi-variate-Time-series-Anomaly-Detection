@@ -81,8 +81,8 @@ stages:
       size: 8125344
     - path: src/train_pipeline.py
       hash: md5
-      md5: dadfb6f34f3137dfcbab422e25961d9d
-      size: 5809
+      md5: 0074f6bdebcf797f82359622311e3347
+      size: 8311
     outs:
     - path: models/scaler.pkl
       hash: md5
@@ -90,15 +90,15 @@ stages:
       size: 2183
     - path: models/threshold.npy
       hash: md5
-      md5: b78b1ebe209361ec49140df69b58a260
+      md5: f6fd27313f5c57a5538aea4630647cbb
       size: 136
     - path: models/vae_decoder.keras
       hash: md5
-      md5: a0edbf836ac8894b43db011f6ef63d8c
+      md5: dddcc342ed9903a4eef4d75033b7d4ac
       size: 350133
     - path: models/vae_encoder.keras
       hash: md5
-      md5: 813ccf16077fa8f3f13e9f2bf8f49351
+      md5: 114e82e9c010981161003633d72a50fd
       size: 335867
   evaluate_omnianomaly:
     cmd: python src/evaluate.py machine-1-1
