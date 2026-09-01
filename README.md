@@ -100,7 +100,6 @@ curl http://127.0.0.1:8000/health
 - **MLflow experiment tracking**
 - **SQLite persistence** for production telemetry
 - **Streamlit dashboard** for visualization
-
 ---
 
 ## 🔌 API Endpoints
@@ -178,7 +177,9 @@ streamlit run src/dashboard.py
 
 ## 📊 Model Architecture
 
-### GRU-VAE (Generative Adversarial Variational Autoencoder)
+<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/bc2a7b40-cd38-4b80-9067-c656f36f97ca" />
+
+### GRU-VAE (Gated Recurrent Unit-Variational Autoencoder)
 
 **Input:** 30 timesteps × 38 metrics (time-series sequences)
 
